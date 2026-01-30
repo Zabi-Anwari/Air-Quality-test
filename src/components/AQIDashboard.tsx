@@ -96,6 +96,23 @@ const AQIDashboard: React.FC<AQIDashboardProps> = ({
   const [availableLocations, setAvailableLocations] = useState<any[]>([]);
   const selectedLocationIdsRef = useRef<number[]>(getInitialLocations());
 
+  const reconcileSelectedLocations = (locations: { id: number }[]) => {
+    if (!locations.length) return;
+
+    const validIds = new Set(locations.map((loc) => loc.id));
+    const filtered = selectedLocationIdsRef.current.filter((id) => validIds.has(id));
+    const nextSelection = filtered.length ? filtered : locations.slice(0, 2).map((loc) => loc.id);
+
+    if (nextSelection.join(',') !== selectedLocationIdsRef.current.join(',')) {
+      setSelectedLocationIds(nextSelection);
+      selectedLocationIdsRef.current = nextSelection;
+      localStorage.setItem('selectedLocationIds', JSON.stringify(nextSelection));
+      if (onLocationChange) {
+        onLocationChange(nextSelection);
+      }
+    }
+  };
+
   // Save selected locations to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('selectedLocationIds', JSON.stringify(selectedLocationIds));
@@ -117,6 +134,7 @@ const AQIDashboard: React.FC<AQIDashboardProps> = ({
       }));
 
       setAvailableLocations(locations);
+      reconcileSelectedLocations(locations);
     } catch (err) {
       console.error('Error fetching sensors:', err);
     }
@@ -232,6 +250,19 @@ const AQIDashboard: React.FC<AQIDashboardProps> = ({
     }
   };
 
+  useEffect(() => {
+    if (propLocationIds && propLocationIds.length > 0) {
+      setSelectedLocationIds(propLocationIds);
+      selectedLocationIdsRef.current = propLocationIds;
+    }
+  }, [propLocationIds]);
+
+  useEffect(() => {
+    if (availableLocations.length) {
+      reconcileSelectedLocations(availableLocations);
+    }
+  }, [availableLocations]);
+
   // Initial load and setup polling
   useEffect(() => {
     fetchLocations();
@@ -329,25 +360,6 @@ const AQIDashboard: React.FC<AQIDashboardProps> = ({
             }, 0);
           }}
         />
-
-        {/* Critical Alerts */}
-        {criticalAlerts.length > 0 && (
-          <div className="bg-red-50 border-l-4 border-red-600 p-4 mb-6 rounded">
-            <div className="flex items-start gap-3">
-              <FiAlertTriangle className="text-red-600 mt-1 flex-shrink-0" size={20} />
-              <div>
-                <h3 className="font-bold text-red-700">🚨 Critical Alerts ({criticalAlerts.length})</h3>
-                <div className="mt-2 space-y-1">
-                  {criticalAlerts.slice(0, 3).map((alert) => (
-                    <p key={alert.id} className="text-red-600 text-sm">
-                      • {alert.message}
-                    </p>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {(() => {
           const visibleAqiData = aqiData.filter((data) => selectedLocationIds.includes(data.sensor_id));
@@ -508,6 +520,25 @@ const AQIDashboard: React.FC<AQIDashboardProps> = ({
 
         {/* Air Quality Improvement Recommendations */}
         <AirQualityImprovementRecommendations />
+
+        {/* Critical Alerts */}
+        {criticalAlerts.length > 0 && (
+          <div className="bg-red-50 border-l-4 border-red-600 p-4 mb-6 rounded">
+            <div className="flex items-start gap-3">
+              <FiAlertTriangle className="text-red-600 mt-1 flex-shrink-0" size={20} />
+              <div>
+                <h3 className="font-bold text-red-700">🚨 Critical Alerts ({criticalAlerts.length})</h3>
+                <div className="mt-2 space-y-1">
+                  {criticalAlerts.slice(0, 3).map((alert) => (
+                    <p key={alert.id} className="text-red-600 text-sm">
+                      • {alert.message}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Sensor Alerts */}
         {activeSensorAlerts.length > 0 && (

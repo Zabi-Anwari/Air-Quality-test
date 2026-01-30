@@ -202,6 +202,7 @@ CREATE TABLE forecasts (
   forecast_hour INTEGER NOT NULL,
   predicted_aqi INTEGER NOT NULL,
   confidence FLOAT NOT NULL DEFAULT 0.75,
+  model_version VARCHAR(50) DEFAULT '1.0',
   valid_at TIMESTAMP NOT NULL,
   created_at TIMESTAMP DEFAULT NOW(),
   UNIQUE(sensor_id, forecast_hour, valid_at)
@@ -214,12 +215,13 @@ CREATE INDEX idx_forecasts_created_at ON forecasts(created_at DESC);
 CREATE INDEX idx_forecasts_composite ON forecasts(sensor_id, valid_at);
 
 -- Insert sample forecasts (6 hours ahead for each sensor)
-INSERT INTO forecasts (sensor_id, forecast_hour, predicted_aqi, confidence, valid_at)
+INSERT INTO forecasts (sensor_id, forecast_hour, predicted_aqi, confidence, model_version, valid_at)
 SELECT 
   s.id,
   hour,
   FLOOR(RANDOM() * 200 + 20)::INTEGER,
   0.7 + RANDOM() * 0.25,
+  '1.0',
   NOW() + (hour || ' hours')::INTERVAL
 FROM sensors s
 CROSS JOIN generate_series(1, 6) AS hour_data(hour);

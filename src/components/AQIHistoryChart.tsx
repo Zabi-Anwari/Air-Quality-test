@@ -253,14 +253,16 @@ const AQIHistoryChart: React.FC<ChartProps> = ({ selectedLocationIds = [1, 2], h
             onChange={(e) => setSelectedSensor(parseInt(e.target.value))}
             className="w-full sm:w-96 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            {selectedLocationIds && selectedLocationIds.map((id) => {
-              const locationName = availableLocations.find((location) => location.id === id)?.name;
-              return (
-                <option key={id} value={id}>
-                  {locationName || `Location ${id}`}
-                </option>
-              );
-            })}
+            {selectedLocationIds
+              ?.filter((id) => availableLocations.some((location) => location.id === id))
+              .map((id) => {
+                const locationName = availableLocations.find((location) => location.id === id)?.name;
+                return (
+                  <option key={id} value={id}>
+                    {locationName || `Location ${id}`}
+                  </option>
+                );
+              })}
           </select>
         </div>
       </div>

@@ -4,7 +4,7 @@
  */
 
 import express, { Request, Response } from 'express';
-import { generateForecast, storeForecast, getLatestForecasts, generateAndStoreForecasts } from '../services/forecast-service';
+import { generateForecast, storeForecast, replaceForecasts, getLatestForecasts, generateAndStoreForecasts } from '../services/forecast-service';
 import { getMockForecasts } from '../services/mock-data';
 
 const router = express.Router();
@@ -17,6 +17,14 @@ router.get('/:sensorId', async (req: Request, res: Response) => {
   try {
     const sensorId = parseInt(req.params.sensorId);
     let forecasts = await getLatestForecasts(sensorId);
+
+    if (forecasts.length < 72) {
+      const generated = await generateForecast(sensorId);
+      if (generated.length) {
+        const stored = await replaceForecasts(sensorId, generated);
+        forecasts = stored;
+      }
+    }
 
     if (!forecasts.length) {
       const generated = await generateForecast(sensorId);

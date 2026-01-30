@@ -194,6 +194,24 @@ export async function storeForecast(
 }
 
 /**
+ * Replace forecasts for a sensor (clear then insert a full set)
+ */
+export async function replaceForecasts(
+  sensor_id: number,
+  forecasts: ForecastData[]
+): Promise<ForecastRow[]> {
+  await query('DELETE FROM forecasts WHERE sensor_id = $1', [sensor_id]);
+
+  const stored: ForecastRow[] = [];
+  for (const forecast of forecasts) {
+    const result = await storeForecast(sensor_id, forecast);
+    stored.push(result);
+  }
+
+  return stored;
+}
+
+/**
  * Get latest forecasts for a sensor
  */
 export async function getLatestForecasts(sensor_id: number, hours: number = 6): Promise<ForecastRow[]> {
