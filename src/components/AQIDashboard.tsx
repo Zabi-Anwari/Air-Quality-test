@@ -146,7 +146,7 @@ const AQIDashboard: React.FC<AQIDashboardProps> = ({
     try {
       const response = await fetch('/api/aqi/current');
       if (!response.ok) throw new Error('Failed to fetch AQI data');
-      let data: any[] = await response.json();
+      const data = (await response.json()) as any[];
       
       // Build available locations from response - do this every time to get all locations
       if (data.length > 0) {
@@ -172,7 +172,7 @@ const AQIDashboard: React.FC<AQIDashboardProps> = ({
       
       // De-duplicate by sensor_id (keep latest timestamp if duplicates exist)
       const dedupedData = Array.from(
-        filteredData.reduce((map, item) => {
+        filteredData.reduce((map: Map<number, any>, item: any) => {
           const existing = map.get(item.sensor_id);
           if (!existing) {
             map.set(item.sensor_id, item);
@@ -186,10 +186,10 @@ const AQIDashboard: React.FC<AQIDashboardProps> = ({
           }
           return map;
         }, new Map<number, any>())
-      ).map(([, value]) => value);
+      ).map((entry) => (entry as [number, any])[1]);
 
       // Normalize the data to match AQIData interface
-      const normalizedData = dedupedData.map(item => ({
+      const normalizedData = dedupedData.map((item: any) => ({
         sensor_id: item.sensor_id,
         device_id: item.device_id || item.sensor_id,
         site: item.site || item.sensor_name || item.location_name || `Sensor ${item.sensor_id}`,
@@ -300,6 +300,13 @@ const AQIDashboard: React.FC<AQIDashboardProps> = ({
   const selectedData = aqiData.find(
     (d) => d.sensor_id === selectedSensor && selectedLocationIds.includes(d.sensor_id)
   );
+  const selectedPollutants = selectedData?.pollutants ?? {
+    pm25: null,
+    pm10: null,
+    no2: null,
+    co: null,
+    o3: null,
+  };
   const activeSensorAlerts = alerts.filter((a) => a.sensor_id === selectedSensor && a.is_active);
   const criticalAlerts = alerts.filter((a) => a.severity === 'critical' && a.is_active);
 
@@ -428,7 +435,7 @@ const AQIDashboard: React.FC<AQIDashboardProps> = ({
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-800 mb-2">Health Recommendation</h3>
                   <p className="text-lg text-gray-700 leading-relaxed">
-                    {getHealthRecommendation(selectedData.current_aqi)}
+                    {getHealthRecommendation(selectedData.current_aqi ?? 0)}
                   </p>
                   <p className="text-xs text-gray-500 mt-3">
                     Dominant: <span className="font-semibold">{selectedData.dominant_pollutant}</span>
@@ -443,7 +450,7 @@ const AQIDashboard: React.FC<AQIDashboardProps> = ({
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="font-semibold text-gray-800 mb-3">Pollutant Levels (µg/m³)</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {Object.entries(selectedData.pollutants).map(([pollutant, value]) => {
+                  {Object.entries(selectedPollutants).map(([pollutant, value]) => {
                     const numericValue = Number(value);
                     const displayValue = Number.isFinite(numericValue) ? numericValue.toFixed(1) : 'N/A';
 
@@ -455,7 +462,7 @@ const AQIDashboard: React.FC<AQIDashboardProps> = ({
                   );
                   })}
                 </div>
-                {Object.values(selectedData.pollutants).every((value) => value === null) && (
+                {Object.values(selectedPollutants).every((value) => value === null) && (
                   <p className="text-xs text-gray-500 mt-3">
                     This data source only provides limited pollutant details. Additional pollutants may be unavailable.
                   </p>
