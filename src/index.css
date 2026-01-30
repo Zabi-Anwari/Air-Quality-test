@@ -1,0 +1,48 @@
+/* src/index.css (Cleaned Version) */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+/* 1. Tailwind Directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 2. Global Structural Reset (Apply only absolutely necessary global rules) */
+#root {
+  /* Remove width, margins, padding, and text-align to let Tailwind classes on <main> take over */
+  /* If you want the app to stretch full width, keep nothing here */
+  min-height: 100vh;
+}
+
+/* 3. Global Typography (e.g., the Inter font) */
+/* @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap'); */
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f7f7f7;
+  overflow-x: hidden;
+}
+
+/* 4. Custom Navigation Style */
+.nav-link.active {
+  color: #1e40af;
+  /* Blue-800 */
+  border-bottom: 2px solid #1e40af;
+}
+
+
+.app-wrapper {
+  /* Ensure the entire app container takes up at least the screen height */
+  min-height: 100vh;
+  /* Enable Flexbox on the vertical axis */
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* Ensure the main content area expands to push the footer down */
+.app-main-content {
+  flex-grow: 1;
+}
+
+
+/* REMOVE ALL LOGO, ANIMATION, CARD, AND READ-THE-DOCS STYLES */

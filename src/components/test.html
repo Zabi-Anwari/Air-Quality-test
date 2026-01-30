@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Multi-Page App with Map</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use Inter font -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7;
+            min-height: 100vh;
+        }
+
+        /* Custom map height */
+        #map-container {
+            height: 60vh;
+            width: 100%;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        /* Page content is initially hidden */
+        .page-content {
+            display: none;
+        }
+
+        /* Active link styling */
+        .nav-link.active {
+            color: #1e40af;
+            /* Blue-800 */
+            border-bottom: 2px solid #1e40af;
+        }
+    </style>
+</head>
+
+<body class="antialiased">
+
+    <!-- Navigation Bar -->
+    <header class="bg-white shadow-lg sticky top-0 z-10">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo/Title -->
+                <div class="flex-shrink-0">
+                    <span class="text-2xl font-extrabold text-gray-900">GeoPortal</span>
+                </div>
+                <!-- Navigation Links -->
+                <div class="flex space-x-4">
+                    <a href="#home"
+                        class="nav-link text-gray-600 hover:text-gray-900 px-3 py-2 font-medium transition duration-150 ease-in-out rounded-lg"
+                        data-page="home">Home</a>
+                    <a href="#about"
+                        class="nav-link text-gray-600 hover:text-gray-900 px-3 py-2 font-medium transition duration-150 ease-in-out rounded-lg"
+                        data-page="about">About</a>
+                    <a href="#services"
+                        class="nav-link text-gray-600 hover:text-gray-900 px-3 py-2 font-medium transition duration-150 ease-in-out rounded-lg"
+                        data-page="services">Services</a>
+                    <a href="#map"
+                        class="nav-link text-gray-600 hover:text-gray-900 px-3 py-2 font-medium transition duration-150 ease-in-out rounded-lg"
+                        data-page="map">Map View</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- 1. Home Page -->
+        <section id="home" class="page-content bg-white p-6 md:p-10 rounded-xl shadow-2xl">
+            <div class="md:flex md:items-center">
+                <div class="md:w-1/2">
+                    <h1 class="text-5xl font-extrabold text-gray-900 mb-4 leading-tight">
+                        Welcome to the <span class="text-blue-600">GeoPortal</span>
+                    </h1>
+                    <p class="text-gray-600 mb-6 text-lg">
+                        Your central hub for interactive mapping and spatial services. Explore our features and discover
+                        how location intelligence can transform your projects.
+                    </p>
+                    <a href="#map" data-page="map"
+                        class="nav-link inline-block bg-blue-600 text-white font-semibold py-3 px-6 rounded-xl hover:bg-blue-700 transition duration-300 shadow-md">
+                        Explore the Map
+                    </a>
+                </div>
+                <div class="md:w-1/2 mt-8 md:mt-0 md:pl-10">
+                    <img src="https://placehold.co/600x400/1e40af/ffffff?text=Interactive+Dashboard"
+                        alt="Dashboard illustration" class="rounded-xl shadow-xl w-full h-auto"
+                        onerror="this.onerror=null; this.src='https://placehold.co/600x400/1e40af/ffffff?text=Interactive+Dashboard';">
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. About Page -->
+        <section id="about" class="page-content bg-white p-6 md:p-10 rounded-xl shadow-2xl">
+            <h2 class="text-4xl font-bold text-gray-900 mb-6 border-b-2 pb-2">About Us</h2>
+            <div class="space-y-6 text-gray-700">
+                <p>
+                    Founded in 2024, GeoPortal was built on the principle of making advanced mapping technology
+                    accessible and intuitive. Our team is composed of seasoned GIS specialists, full-stack developers,
+                    and UI/UX designers committed to delivering seamless digital experiences.
+                </p>
+                <p>
+                    We specialize in real-time data visualization, route optimization, and location-based data
+                    analytics. Our mission is to empower businesses and individuals with accurate, beautiful, and
+                    actionable spatial data. We believe that understanding 'where' is just as important as understanding
+                    'what' and 'why'.
+                </p>
+                <ul class="list-disc list-inside space-y-2 pl-4">
+                    <li>Commitment to Data Privacy and Security</li>
+                    <li>Innovative use of Cloud-based Mapping Solutions</li>
+                    <li>24/7 Dedicated Support for Enterprise Clients</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- 3. Services Page -->
+        <section id="services" class="page-content bg-white p-6 md:p-10 rounded-xl shadow-2xl">
+            <h2 class="text-4xl font-bold text-gray-900 mb-6 border-b-2 pb-2">Our Core Services</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Service 1 -->
+                <div class="bg-gray-50 p-6 rounded-xl shadow-lg hover:shadow-xl transition duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-600 mb-3" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+                        <path d="M15.5 8.5l-3 3-3-3m3 3V7" />
+                    </svg>
+                    <h3 class="text-xl font-semibold mb-2 text-gray-800">Real-time Tracking</h3>
+                    <p class="text-gray-600">Monitor assets, vehicles, and personnel with millisecond accuracy across
+                        global territories.</p>
+                </div>
+                <!-- Service 2 -->
+                <div class="bg-gray-50 p-6 rounded-xl shadow-lg hover:shadow-xl transition duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-600 mb-3" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 6v6l4 2" />
+                    </svg>
+                    <h3 class="text-xl font-semibold mb-2 text-gray-800">Route Optimization</h3>
+                    <p class="text-gray-600">Minimize travel time and fuel costs using our advanced predictive routing
+                        algorithms.</p>
+                </div>
+                <!-- Service 3 -->
+                <div class="bg-gray-50 p-6 rounded-xl shadow-lg hover:shadow-xl transition duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-600 mb-3" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path
+                            d="M18 8h-1a4 4 0 0 0-4 4v2H7v-4h3a4 4 0 0 0 4-4V2c0-1.1-.9-2-2-2S10 0.9 10 2v4a2 2 0 0 1-2 2H5v14h14V8h-1z" />
+                    </svg>
+                    <h3 class="text-xl font-semibold mb-2 text-gray-800">Data Visualization</h3>
+                    <p class="text-gray-600">Transform raw location data into insightful heatmaps, clusters, and 3D
+                        models.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Map View Page (Google Maps) -->
+        <section id="map" class="page-content bg-white p-6 md:p-10 rounded-xl shadow-2xl">
+            <h2 class="text-4xl font-bold text-gray-900 mb-6 border-b-2 pb-2">Interactive Map</h2>
+            <p class="text-gray-700 mb-6">Explore the world or find specific locations using the interactive map powered
+                by Google Maps.</p>
+            <div id="map-container" class="shadow-xl border border-gray-200">
+                <!-- The map will be initialized here by JavaScript -->
+                <div id="map-canvas"
+                    class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500 font-semibold">
+                    Loading Map...
+                </div>
+            </div>
+            <div class="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200 text-yellow-800">
+                **Note:** For the live map to work, you must use a valid Google Maps API Key in the script tag below. A
+                placeholder is currently used.
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 mt-10">
+        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-gray-400">&copy; 2024 GeoPortal. All rights reserved. | Built with
+                Tailwind CSS.</p>
+        </div>
+    </footer>
+
+    <!-- Google Maps API Script Loading -->
+    <!-- Replace YOUR_API_KEY_HERE with a valid API key for production -->
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY_HERE&callback=initMap&v=weekly">
+    </script>
+
+    <!-- JavaScript Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Function to handle page switching and URL hash updates
+            const switchPage = (pageId) => {
+                // 1. Hide all pages
+                document.querySelectorAll('.page-content').forEach(section => {
+                    section.style.display = 'none';
+                });
+
+                // 2. Show the requested page
+                const activePage = document.getElementById(pageId);
+                if (activePage) {
+                    activePage.style.display = 'block';
+                }
+
+                // 3. Update active navigation link styling
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('data-page') === pageId) {
+                        link.classList.add('active');
+                    }
+                });
+
+                // 4. If the map page is active, initialize the map
+                if (pageId === 'map' && typeof window.initMap === 'function') {
+                    // This ensures the map is only initialized when the div is visible
+                    window.initMap();
+                }
+
+                // 5. Update URL hash (optional but nice for navigation)
+                if (window.location.hash !== `#${pageId}`) {
+                    history.pushState(null, null, `#${pageId}`);
+                }
+            };
+
+            // Set up click listeners for all navigation links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const pageId = e.target.getAttribute('data-page');
+                    switchPage(pageId);
+                });
+            });
+
+            // Initial load check: load page based on URL hash or default to 'home'
+            const initialHash = window.location.hash.substring(1);
+            const defaultPage = initialHash || 'home';
+            switchPage(defaultPage);
+        });
+
+        // Global function for Google Maps API to call back
+        function initMap() {
+            const mapElement = document.getElementById('map-canvas');
+            if (mapElement) {
+                const center = { lat: 34.0522, lng: -118.2437 }; // Los Angeles
+
+                const map = new google.maps.Map(mapElement, {
+                    center: center,
+                    zoom: 10,
+                    mapId: "HTML_GEOPORTAL_MAP",
+                });
+
+                new google.maps.Marker({
+                    position: center,
+                    map: map,
+                    title: 'Center Location',
+                });
+            }
+        }
+    </script>
+</body>
+
+</html>
