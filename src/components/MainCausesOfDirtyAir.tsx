@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import { useLanguage } from '../i18n.js';
 
 interface CauseCard {
   title: string;
@@ -14,35 +15,32 @@ interface CauseCard {
 }
 
 const MainCausesOfDirtyAir: React.FC = () => {
+  const { t } = useLanguage();
   const causes: CauseCard[] = [
     {
-      title: 'Vehicle emissions',
-      description:
-        'Nitrogen oxides and fine particulate matter (PM) from vehicles in the city are the biggest sources of pollution.',
+      title: t('causes.cards.vehicles.title'),
+      description: t('causes.cards.vehicles.description'),
       icon: '🚗',
       color: 'bg-red-50',
       percentage: 40,
     },
     {
-      title: 'Individual heating',
-      description:
-        'The use of coal and cheap fuel in suburban homes during the winter releases harmful smoke and soot into the atmosphere.',
+      title: t('causes.cards.heating.title'),
+      description: t('causes.cards.heating.description'),
       icon: '🔥',
       color: 'bg-orange-50',
       percentage: 30,
     },
     {
-      title: 'Industrial impact',
-      description:
-        'Emissions from local thermal power plants and industrial plants and heavy particulate matter (sulfur dioxide) affect air quality.',
+      title: t('causes.cards.industry.title'),
+      description: t('causes.cards.industry.description'),
       icon: '🏭',
       color: 'bg-yellow-50',
       percentage: 20,
     },
     {
-      title: 'Geographical factor',
-      description:
-        'Almaty is surrounded by mountains creating an inversion layer in winter. Pollutants accumulate over the city and cannot disperse.',
+      title: t('causes.cards.geo.title'),
+      description: t('causes.cards.geo.description'),
       icon: '⛰️',
       color: 'bg-blue-50',
       percentage: 10,
@@ -53,8 +51,8 @@ const MainCausesOfDirtyAir: React.FC = () => {
     <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
       {/* Header */}
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-800">The main causes of dirty air</h2>
-        <p className="text-gray-600 text-sm mt-2">Understanding the primary sources of pollution in urban areas</p>
+        <h2 className="text-2xl font-bold text-gray-800">{t('causes.title')}</h2>
+        <p className="text-gray-600 text-sm mt-2">{t('causes.subtitle')}</p>
       </div>
 
       {/* Causes Grid */}
@@ -77,7 +75,7 @@ const MainCausesOfDirtyAir: React.FC = () => {
             {cause.percentage && (
               <div className="mt-4">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs text-gray-600">Contribution</span>
+                  <span className="text-xs text-gray-600">{t('causes.contribution')}</span>
                   <span className="text-sm font-bold text-gray-800">{cause.percentage}%</span>
                 </div>
                 <div className="w-full bg-gray-300 rounded-full h-2 overflow-hidden">
@@ -102,10 +100,9 @@ const MainCausesOfDirtyAir: React.FC = () => {
 
       {/* Bottom Info */}
       <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded">
-        <p className="text-red-900 font-semibold mb-2">🔴 Pollution Peak:</p>
+        <p className="text-red-900 font-semibold mb-2">{t('causes.peakTitle')}</p>
         <p className="text-red-800 text-sm">
-          The highest levels of pollution were observed at the beginning of the work week, reflecting the impact of
-          traffic.
+          {t('causes.peakBody')}
         </p>
       </div>
     </div>

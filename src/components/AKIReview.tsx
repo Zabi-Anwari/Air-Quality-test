@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import { useLanguage } from '../i18n.js';
 
 interface AKIData {
   location: string;
@@ -18,6 +19,7 @@ interface AKIReviewProps {
 }
 
 const AKIReview: React.FC<AKIReviewProps> = ({ data }) => {
+  const { t } = useLanguage();
   const maxAQI = 150; // Max scale for display
   
   const getStatusColor = (status: string) => {
@@ -52,12 +54,23 @@ const AKIReview: React.FC<AKIReviewProps> = ({ data }) => {
     }
   };
 
+  const translateStatus = (status: string) => {
+    const normalized = status.toLowerCase();
+    if (normalized.includes('hazardous')) return t('aqiCategories.hazardous');
+    if (normalized.includes('very unhealthy')) return t('aqiCategories.veryUnhealthy');
+    if (normalized.includes('unhealthy for sensitive') || normalized.includes('sensitive')) return t('aqiCategories.sensitive');
+    if (normalized.includes('unhealthy')) return t('aqiCategories.unhealthy');
+    if (normalized.includes('moderate')) return t('aqiCategories.moderate');
+    if (normalized.includes('good')) return t('aqiCategories.good');
+    return status;
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-lg p-4 mb-6">
       {/* Header */}
       <div className="mb-4">
-        <h2 className="text-xl font-bold text-gray-800">AKI Review (Max 150)</h2>
-        <p className="text-gray-500 text-xs mt-0.5">Comparison of Air Quality Index across locations</p>
+        <h2 className="text-xl font-bold text-gray-800">{t('akiReview.title')}</h2>
+        <p className="text-gray-500 text-xs mt-0.5">{t('akiReview.subtitle')}</p>
       </div>
 
       {/* Compact Bar Charts */}
@@ -90,10 +103,10 @@ const AKIReview: React.FC<AKIReviewProps> = ({ data }) => {
         <table className="w-full text-xs">
           <thead>
             <tr className="border-b border-gray-300 bg-gray-50">
-              <th className="text-left py-2 px-2 text-gray-700 font-semibold">Location</th>
-              <th className="text-center py-2 px-2 text-gray-700 font-semibold">AQI</th>
-              <th className="text-center py-2 px-2 text-gray-700 font-semibold">PM2.5</th>
-              <th className="text-center py-2 px-2 text-gray-700 font-semibold">Status</th>
+              <th className="text-left py-2 px-2 text-gray-700 font-semibold">{t('akiReview.table.location')}</th>
+              <th className="text-center py-2 px-2 text-gray-700 font-semibold">{t('akiReview.table.aqi')}</th>
+              <th className="text-center py-2 px-2 text-gray-700 font-semibold">{t('akiReview.table.pm25')}</th>
+              <th className="text-center py-2 px-2 text-gray-700 font-semibold">{t('akiReview.table.status')}</th>
             </tr>
           </thead>
           <tbody>
@@ -108,7 +121,7 @@ const AKIReview: React.FC<AKIReviewProps> = ({ data }) => {
                 <td className="py-2 px-2 text-center text-gray-700 text-xs">{item.pm25.toFixed(1)}</td>
                 <td className="py-2 px-2 text-center">
                   <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${getStatusBadgeColor(item.status)}`}>
-                    {item.status.length > 12 ? item.status.substring(0, 12) + '...' : item.status}
+                    {translateStatus(item.status).length > 12 ? translateStatus(item.status).substring(0, 12) + '...' : translateStatus(item.status)}
                   </span>
                 </td>
               </tr>

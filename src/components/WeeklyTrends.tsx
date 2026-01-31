@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import { useLanguage } from '../i18n.js';
 
 interface TrendData {
   day: string;
@@ -16,15 +17,16 @@ interface WeeklyTrendsProps {
 }
 
 const WeeklyTrends: React.FC<WeeklyTrendsProps> = ({ data }) => {
+  const { t } = useLanguage();
   // Mock data for demonstration if not provided
   const trendData = data || [
-    { day: 'Mon', aqi: 85, trend: 'up' as const },
-    { day: 'Tue', aqi: 92, trend: 'up' as const },
-    { day: 'Wed', aqi: 78, trend: 'down' as const },
-    { day: 'Thu', aqi: 65, trend: 'down' as const },
-    { day: 'Fri', aqi: 72, trend: 'up' as const },
-    { day: 'Sat', aqi: 45, trend: 'down' as const },
-    { day: 'Sun', aqi: 38, trend: 'down' as const },
+    { day: t('weeklyTrends.days.mon'), aqi: 85, trend: 'up' as const },
+    { day: t('weeklyTrends.days.tue'), aqi: 92, trend: 'up' as const },
+    { day: t('weeklyTrends.days.wed'), aqi: 78, trend: 'down' as const },
+    { day: t('weeklyTrends.days.thu'), aqi: 65, trend: 'down' as const },
+    { day: t('weeklyTrends.days.fri'), aqi: 72, trend: 'up' as const },
+    { day: t('weeklyTrends.days.sat'), aqi: 45, trend: 'down' as const },
+    { day: t('weeklyTrends.days.sun'), aqi: 38, trend: 'down' as const },
   ];
 
   const getAQIColor = (aqi: number) => {
@@ -41,9 +43,9 @@ const WeeklyTrends: React.FC<WeeklyTrendsProps> = ({ data }) => {
     <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Trends in the last week (Average AKI)</h2>
+        <h2 className="text-2xl font-bold text-gray-800">{t('weeklyTrends.title')}</h2>
         <div className="flex items-center gap-4 mt-2">
-          <p className="text-gray-600">Average: <span className="font-bold text-lg text-blue-600">{avgAQI}</span></p>
+          <p className="text-gray-600">{t('weeklyTrends.averageLabel')}: <span className="font-bold text-lg text-blue-600">{avgAQI}</span></p>
         </div>
       </div>
 
@@ -81,7 +83,7 @@ const WeeklyTrends: React.FC<WeeklyTrendsProps> = ({ data }) => {
       {/* Insight */}
       <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
         <p className="text-blue-900 text-sm">
-          <span className="font-bold">💡 Insight:</span> The highest levels of pollution were observed at the beginning of the work week, reflecting the impact of traffic. Weekends show significantly cleaner air.
+          <span className="font-bold">{t('weeklyTrends.insightTitle')}</span> {t('weeklyTrends.insightBody')}
         </p>
       </div>
     </div>

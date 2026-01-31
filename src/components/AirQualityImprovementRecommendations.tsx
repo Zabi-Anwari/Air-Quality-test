@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import { useLanguage } from '../i18n.js';
 
 interface RecommendationCard {
   title: string;
@@ -13,53 +14,31 @@ interface RecommendationCard {
 }
 
 const AirQualityImprovementRecommendations: React.FC = () => {
+  const { t } = useLanguage();
   const recommendations: RecommendationCard[] = [
     {
-      title: 'Public transportation / Walking',
-      description: 'Reduce your use of private vehicles within the city as much as possible. This will immediately reduce emissions.',
+      title: t('recommendations.cards.transport.title'),
+      description: t('recommendations.cards.transport.description'),
       icon: '🚶',
-      tips: [
-        'Use public buses and metro systems',
-        'Carpool with coworkers',
-        'Cycle or walk short distances',
-        'Support car-free city initiatives',
-      ],
+      tips: t('recommendations.cards.transport.tips'),
     },
     {
-      title: 'Energy saving',
-      description:
-        'Take steps to save energy at home. Efficient use of heat reduces the demand for coal-fired power generation.',
+      title: t('recommendations.cards.energy.title'),
+      description: t('recommendations.cards.energy.description'),
       icon: '💡',
-      tips: [
-        'Insulate your home properly',
-        'Use energy-efficient appliances',
-        'Switch to renewable energy sources',
-        'Reduce unnecessary heating in winter',
-      ],
+      tips: t('recommendations.cards.energy.tips'),
     },
     {
-      title: 'Stay informed',
-      description:
-        'Regularly check your air quality with this dashboard and limit your exposure to the sun in the morning.',
+      title: t('recommendations.cards.informed.title'),
+      description: t('recommendations.cards.informed.description'),
       icon: '📱',
-      tips: [
-        'Check AQI before outdoor activities',
-        'Wear protective masks during high pollution',
-        'Plan outdoor exercise during low-pollution periods',
-        'Share air quality information with family',
-      ],
+      tips: t('recommendations.cards.informed.tips'),
     },
     {
-      title: 'Support policy changes',
-      description:
-        'Support government initiatives aimed at improving air quality, such as emissions standards and green spaces.',
+      title: t('recommendations.cards.policy.title'),
+      description: t('recommendations.cards.policy.description'),
       icon: '🤝',
-      tips: [
-        'Vote for environmental policies',
-        'Participate in community clean-up events',
-        'Support tree-planting initiatives',
-        'Advocate for stricter emission regulations',
-      ],
+      tips: t('recommendations.cards.policy.tips'),
     },
   ];
 
@@ -67,8 +46,8 @@ const AirQualityImprovementRecommendations: React.FC = () => {
     <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
       {/* Header */}
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-800">What can be done to improve air quality?</h2>
-        <p className="text-gray-600 text-sm mt-2">Individual and collective actions to create cleaner air</p>
+        <h2 className="text-2xl font-bold text-gray-800">{t('recommendations.title')}</h2>
+        <p className="text-gray-600 text-sm mt-2">{t('recommendations.subtitle')}</p>
       </div>
 
       {/* Recommendations Grid */}
@@ -97,7 +76,7 @@ const AirQualityImprovementRecommendations: React.FC = () => {
 
             {/* Tips List */}
             <div className="space-y-2 pt-4 border-t border-gray-300">
-              <p className="text-xs font-bold text-gray-700 uppercase">How to:</p>
+              <p className="text-xs font-bold text-gray-700 uppercase">{t('recommendations.howTo')}</p>
               <ul className="space-y-1">
                 {rec.tips.map((tip, idx) => (
                   <li key={idx} className="text-xs text-gray-700 flex items-start gap-2">
@@ -116,13 +95,10 @@ const AirQualityImprovementRecommendations: React.FC = () => {
         <div className="flex items-start gap-4">
           <div className="text-4xl flex-shrink-0">🌍</div>
           <div>
-            <h3 className="text-lg font-bold text-gray-800 mb-2">Together We Can Make a Difference</h3>
-            <p className="text-gray-700 mb-3">
-              Air quality improvement is a collective responsibility. Every individual action contributes to creating a healthier
-              environment for everyone. Start with small changes today and inspire others to do the same.
-            </p>
+            <h3 className="text-lg font-bold text-gray-800 mb-2">{t('recommendations.cta.title')}</h3>
+            <p className="text-gray-700 mb-3">{t('recommendations.cta.body')}</p>
             <button className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold">
-              Learn More About Air Quality
+              {t('recommendations.cta.button')}
             </button>
           </div>
         </div>

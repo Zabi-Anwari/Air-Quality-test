@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L, { LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { useLanguage } from '../i18n.js';
 
 // Create custom marker icons based on AQI level
 const createAQIMarker = (aqi: number | null = 50) => {
@@ -83,6 +84,7 @@ const buildQuery = (deviceFilter?: string[]): string => {
 };
 
 const AirQualityMap = ({ deviceFilter, apiPath = '/api/sensors/latest' }: Props) => {
+  const { t } = useLanguage();
   const [markers, setMarkers] = useState<DeviceMarker[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -323,7 +325,7 @@ const AirQualityMap = ({ deviceFilter, apiPath = '/api/sensors/latest' }: Props)
     <div className="relative h-full w-full">
       {isLoading && (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/70 backdrop-blur-sm text-gray-700 text-sm">
-          Сенсор деректері жүктелуде...
+          {t('map.loading')}
         </div>
       )}
       {error && (
@@ -348,26 +350,26 @@ const AirQualityMap = ({ deviceFilter, apiPath = '/api/sensors/latest' }: Props)
                 <div className="space-y-2 text-sm">
                   <div className="font-semibold text-gray-800">{marker.device_id}</div>
                   <div className="font-bold text-lg" style={{ color: aqi > 150 ? '#ff6b6b' : aqi > 100 ? '#ffd43b' : aqi > 50 ? '#ffa500' : '#51cf66' }}>
-                    AQI: {Math.round(aqi)}
+                    {t('common.aqi')}: {Math.round(aqi)}
                   </div>
-                  {marker.site && <div className="text-gray-600">Орналасу: {marker.site}</div>}
+                  {marker.site && <div className="text-gray-600">{t('map.locationLabel')}: {marker.site}</div>}
                   {marker.reading ? (
                     <div className="grid grid-cols-2 gap-2 text-xs">
-                      <span className="font-semibold text-gray-700">PM1: {marker.reading.pm1 ?? '--'}</span>
-                      <span className="font-semibold text-gray-700">PM2.5: {marker.reading.pm25 ?? '--'}</span>
-                      <span className="font-semibold text-gray-700">PM10: {marker.reading.pm10 ?? '--'}</span>
-                      <span className="font-semibold text-gray-700">CO₂: {marker.reading.co2 ?? '--'} ppm</span>
-                      <span className="font-semibold text-gray-700">VOC: {marker.reading.voc ?? '--'} ppb</span>
-                      <span className="font-semibold text-gray-700">Темп: {marker.reading.temp ?? '--'} °C</span>
-                      <span className="font-semibold text-gray-700">Ылғалд: {marker.reading.hum ?? '--'} %</span>
-                      <span className="font-semibold text-gray-700">CH2O: {marker.reading.ch2o ?? '--'} ppb</span>
-                      <span className="font-semibold text-gray-700">CO: {marker.reading.co ?? '--'} ppm</span>
-                      <span className="font-semibold text-gray-700">O3: {marker.reading.o3 ?? '--'} ppb</span>
-                      <span className="font-semibold text-gray-700">NO2: {marker.reading.no2 ?? '--'} ppb</span>
-                      <span className="text-gray-600">Уақыт: {marker.reading.recorded_at}</span>
+                      <span className="font-semibold text-gray-700">{t('pollutants.pm1')}: {marker.reading.pm1 ?? '--'}</span>
+                      <span className="font-semibold text-gray-700">{t('pollutants.pm25')}: {marker.reading.pm25 ?? '--'}</span>
+                      <span className="font-semibold text-gray-700">{t('pollutants.pm10')}: {marker.reading.pm10 ?? '--'}</span>
+                      <span className="font-semibold text-gray-700">{t('pollutants.co2')}: {marker.reading.co2 ?? '--'} ppm</span>
+                      <span className="font-semibold text-gray-700">{t('pollutants.voc')}: {marker.reading.voc ?? '--'} ppb</span>
+                      <span className="font-semibold text-gray-700">{t('pollutants.temp')}: {marker.reading.temp ?? '--'} °C</span>
+                      <span className="font-semibold text-gray-700">{t('pollutants.humidity')}: {marker.reading.hum ?? '--'} %</span>
+                      <span className="font-semibold text-gray-700">{t('pollutants.ch2o')}: {marker.reading.ch2o ?? '--'} ppb</span>
+                      <span className="font-semibold text-gray-700">{t('pollutants.co')}: {marker.reading.co ?? '--'} ppm</span>
+                      <span className="font-semibold text-gray-700">{t('pollutants.o3')}: {marker.reading.o3 ?? '--'} ppb</span>
+                      <span className="font-semibold text-gray-700">{t('pollutants.no2')}: {marker.reading.no2 ?? '--'} ppb</span>
+                      <span className="text-gray-600">{t('map.timeLabel')}: {marker.reading.recorded_at}</span>
                     </div>
                   ) : (
-                    <div className="text-gray-600">Пайдалануға қолжетімді оқу жоқ.</div>
+                    <div className="text-gray-600">{t('map.noReading')}</div>
                   )}
                 </div>
               </Popup>

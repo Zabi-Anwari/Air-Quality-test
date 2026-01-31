@@ -12,6 +12,7 @@ import KeyTermsExplanation from './KeyTermsExplanation';
 import MainCausesOfDirtyAir from './MainCausesOfDirtyAir';
 import AirQualityImprovementRecommendations from './AirQualityImprovementRecommendations';
 import LocationSelector from './LocationSelector';
+import { useLanguage } from '../i18n.js';
 
 interface AQIData {
   sensor_id: number;
@@ -69,6 +70,9 @@ const AQIDashboard: React.FC<AQIDashboardProps> = ({
   selectedLocationIds: propLocationIds,
   onLocationChange 
 }) => {
+  const { t, locale } = useLanguage();
+  const localeMap: Record<string, string> = { en: 'en-US', kk: 'kk-KZ', ru: 'ru-RU' };
+  const resolvedLocale = localeMap[locale] || 'en-US';
   // Initialize from localStorage or use defaults
   const getInitialLocations = () => {
     try {
@@ -311,12 +315,24 @@ const AQIDashboard: React.FC<AQIDashboardProps> = ({
   const criticalAlerts = alerts.filter((a) => a.severity === 'critical' && a.is_active);
 
   const getHealthRecommendation = (aqi: number): string => {
-    if (aqi <= 50) return '✓ Good air quality - Outdoor activities recommended';
-    if (aqi <= 100) return '◐ Acceptable air quality - Most can enjoy outdoor activities';
-    if (aqi <= 150) return '△ Sensitive groups should limit outdoor exertion';
-    if (aqi <= 200) return '⚠ Unhealthy - Limit outdoor activities';
-    if (aqi <= 300) return '⚠⚠ Very Unhealthy - Avoid outdoor activities';
-    return '⚠⚠⚠ Hazardous - Stay indoors';
+    if (aqi <= 50) return t('healthRecommendations.good');
+    if (aqi <= 100) return t('healthRecommendations.moderate');
+    if (aqi <= 150) return t('healthRecommendations.sensitive');
+    if (aqi <= 200) return t('healthRecommendations.unhealthy');
+    if (aqi <= 300) return t('healthRecommendations.veryUnhealthy');
+    return t('healthRecommendations.hazardous');
+  };
+
+  const translateCategory = (category?: string) => {
+    if (!category) return t('aqiCategories.unknown');
+    const normalized = category.toLowerCase();
+    if (normalized.includes('hazardous')) return t('aqiCategories.hazardous');
+    if (normalized.includes('very unhealthy')) return t('aqiCategories.veryUnhealthy');
+    if (normalized.includes('unhealthy for sensitive') || normalized.includes('sensitive')) return t('aqiCategories.sensitive');
+    if (normalized.includes('unhealthy')) return t('aqiCategories.unhealthy');
+    if (normalized.includes('moderate')) return t('aqiCategories.moderate');
+    if (normalized.includes('good')) return t('aqiCategories.good');
+    return category;
   };
 
   return (
@@ -325,8 +341,8 @@ const AQIDashboard: React.FC<AQIDashboardProps> = ({
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-gray-800">Air Quality Intelligence</h1>
-            <p className="text-gray-600 mt-2">Real-time monitoring and forecasting platform</p>
+            <h1 className="text-4xl font-bold text-gray-800">{t('dashboard.title')}</h1>
+            <p className="text-gray-600 mt-2">{t('dashboard.subtitle')}</p>
           </div>
           <button
             onClick={() => {
@@ -337,7 +353,7 @@ const AQIDashboard: React.FC<AQIDashboardProps> = ({
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
           >
             <FiRefreshCw className={loading ? 'animate-spin' : ''} />
-            Refresh
+            {t('dashboard.refresh')}
           </button>
         </div>
 
@@ -402,7 +418,7 @@ const AQIDashboard: React.FC<AQIDashboardProps> = ({
                   <p className="text-3xl font-bold mt-2" style={{ color: data.aqi_color }}>
                     {data.current_aqi}
                   </p>
-                  <p className="text-xs text-gray-700 mt-1 font-semibold">{data.aqi_category}</p>
+                  <p className="text-xs text-gray-700 mt-1 font-semibold">{translateCategory(data.aqi_category)}</p>
                 </div>
                 <FiMapPin className="text-gray-400" size={16} />
               </div>
@@ -428,35 +444,43 @@ const AQIDashboard: React.FC<AQIDashboardProps> = ({
                   >
                     <span className="text-5xl font-bold text-white">{selectedData.current_aqi}</span>
                   </div>
-                  <p className="mt-3 text-lg font-semibold text-gray-700">{selectedData.aqi_category}</p>
+                  <p className="mt-3 text-lg font-semibold text-gray-700">{translateCategory(selectedData.aqi_category)}</p>
                 </div>
 
                 {/* Health Recommendation */}
                 <div className="flex-1">
-                  <h3 className="font-semibold text-gray-800 mb-2">Health Recommendation</h3>
+                  <h3 className="font-semibold text-gray-800 mb-2">{t('dashboard.healthRecTitle')}</h3>
                   <p className="text-lg text-gray-700 leading-relaxed">
                     {getHealthRecommendation(selectedData.current_aqi ?? 0)}
                   </p>
                   <p className="text-xs text-gray-500 mt-3">
-                    Dominant: <span className="font-semibold">{selectedData.dominant_pollutant}</span>
+                    {t('dashboard.dominant')}: <span className="font-semibold">{selectedData.dominant_pollutant}</span>
                   </p>
                   <p className="text-xs text-gray-500">
-                    Updated: {new Date(selectedData.timestamp).toLocaleTimeString()}
+                    {t('common.updated')}: {new Date(selectedData.timestamp).toLocaleTimeString(resolvedLocale)}
                   </p>
                 </div>
               </div>
 
               {/* Pollutant Levels */}
               <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-gray-800 mb-3">Pollutant Levels (µg/m³)</h3>
+                <h3 className="font-semibold text-gray-800 mb-3">{t('dashboard.pollutantLevels')}</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {Object.entries(selectedPollutants).map(([pollutant, value]) => {
                     const numericValue = Number(value);
-                    const displayValue = Number.isFinite(numericValue) ? numericValue.toFixed(1) : 'N/A';
+                    const displayValue = Number.isFinite(numericValue) ? numericValue.toFixed(1) : t('common.notAvailable');
+                    const pollutantLabelMap: Record<string, string> = {
+                      pm25: t('pollutants.pm25'),
+                      pm10: t('pollutants.pm10'),
+                      no2: t('pollutants.no2'),
+                      co: t('pollutants.co'),
+                      o3: t('pollutants.o3'),
+                    };
+                    const pollutantLabel = pollutantLabelMap[pollutant] || pollutant.toUpperCase();
 
                     return (
                     <div key={pollutant} className="bg-white p-3 rounded border border-gray-200">
-                      <p className="text-xs text-gray-600">{pollutant.toUpperCase()}</p>
+                      <p className="text-xs text-gray-600">{pollutantLabel}</p>
                       <p className="text-lg font-bold text-gray-800">{displayValue}</p>
                     </div>
                   );
@@ -464,7 +488,7 @@ const AQIDashboard: React.FC<AQIDashboardProps> = ({
                 </div>
                 {Object.values(selectedPollutants).every((value) => value === null) && (
                   <p className="text-xs text-gray-500 mt-3">
-                    This data source only provides limited pollutant details. Additional pollutants may be unavailable.
+                    {t('dashboard.limitedPollutants')}
                   </p>
                 )}
               </div>
@@ -474,7 +498,7 @@ const AQIDashboard: React.FC<AQIDashboardProps> = ({
             <div className="bg-white rounded-lg shadow-md p-6">
               <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <FiTrendingUp className="text-blue-600" />
-                Next 6 Hours
+                {t('dashboard.nextHours')}
               </h3>
 
               {forecast.length > 0 ? (
@@ -487,7 +511,7 @@ const AQIDashboard: React.FC<AQIDashboardProps> = ({
                     <div key={f.hour} className="flex items-center justify-between p-2 bg-gray-50 rounded">
                       <div>
                         <p className="text-sm font-semibold text-gray-700">+{f.hour}h</p>
-                        <p className="text-xs text-gray-500">Confidence: {confidencePct.toFixed(0)}%</p>
+                        <p className="text-xs text-gray-500">{t('common.confidence')}: {confidencePct.toFixed(0)}%</p>
                       </div>
                       <div className="text-right">
                         <p className="text-2xl font-bold" style={{ color: '#FF7E00' }}>
@@ -499,7 +523,7 @@ const AQIDashboard: React.FC<AQIDashboardProps> = ({
                   })}
                 </div>
               ) : (
-                <p className="text-gray-500 text-center py-4">Loading forecast...</p>
+                <p className="text-gray-500 text-center py-4">{t('dashboard.loadingForecast')}</p>
               )}
             </div>
           </div>
@@ -534,7 +558,7 @@ const AQIDashboard: React.FC<AQIDashboardProps> = ({
             <div className="flex items-start gap-3">
               <FiAlertTriangle className="text-red-600 mt-1 flex-shrink-0" size={20} />
               <div>
-                <h3 className="font-bold text-red-700">🚨 Critical Alerts ({criticalAlerts.length})</h3>
+                <h3 className="font-bold text-red-700">🚨 {t('dashboard.criticalAlerts')} ({criticalAlerts.length})</h3>
                 <div className="mt-2 space-y-1">
                   {criticalAlerts.slice(0, 3).map((alert) => (
                     <p key={alert.id} className="text-red-600 text-sm">
@@ -550,7 +574,7 @@ const AQIDashboard: React.FC<AQIDashboardProps> = ({
         {/* Sensor Alerts */}
         {activeSensorAlerts.length > 0 && (
           <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Active Alerts</h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-4">{t('dashboard.activeAlerts')}</h3>
             <div className="space-y-3">
               {activeSensorAlerts.map((alert) => (
                 <div
@@ -565,7 +589,7 @@ const AQIDashboard: React.FC<AQIDashboardProps> = ({
                 >
                   <p className="font-semibold text-gray-800">{alert.message}</p>
                   <p className="text-xs text-gray-600 mt-1">
-                    {new Date(alert.created_at).toLocaleString()} •{' '}
+                    {new Date(alert.created_at).toLocaleString(resolvedLocale)} •{' '}
                     <span className="capitalize font-semibold">{alert.severity}</span>
                   </p>
                 </div>
@@ -576,8 +600,8 @@ const AQIDashboard: React.FC<AQIDashboardProps> = ({
 
         {/* Footer */}
         <div className="text-center text-gray-600 text-sm mt-8">
-          <p>Last updated: {lastUpdate ? lastUpdate.toLocaleTimeString() : 'Never'}</p>
-          <p className="mt-1">Real-time air quality monitoring for multiple sensors</p>
+          <p>{t('common.lastUpdated')}: {lastUpdate ? lastUpdate.toLocaleTimeString(resolvedLocale) : t('common.never')}</p>
+          <p className="mt-1">{t('dashboard.footerNote')}</p>
         </div>
       </div>
     </div>

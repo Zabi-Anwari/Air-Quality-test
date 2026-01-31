@@ -1,6 +1,8 @@
 import { FaInstagram, FaTelegram } from "react-icons/fa";
+import { useLanguage } from '../i18n.js';
 
 export default function Footer() {
+    const { t } = useLanguage();
     return (
         <div
             className="w-full p-10"
@@ -12,33 +14,33 @@ export default function Footer() {
                 <div className="hidden md:flex justify-between items-start">
 
                     <div className="flex-1">
-                        {about()}
+                        {about(t)}
                     </div>
 
                     <div className="w-px h-32 bg-white/20 mx-10" />
 
                     <div className="flex-1">
-                        {social()}
+                        {social(t)}
                     </div>
 
                     <div className="w-px h-32 bg-white/20 mx-10" />
 
                     <div className="flex-1">
-                        {contacts()}
+                        {contacts(t)}
                     </div>
                 </div>
 
                 <div className="md:hidden flex flex-col gap-10">
-                    {about()}
-                    {social()}
-                    {contacts()}
+                    {about(t)}
+                    {social(t)}
+                    {contacts(t)}
                 </div>
             </div>
         </div>
     );
 }
 
-function about() {
+function about(t) {
     return (
         <div>
             <div className="flex items-center gap-3">
@@ -47,39 +49,38 @@ function about() {
             </div>
 
             <p className="text-white/70 mt-5 text-sm">
-                ICPAIR — ауа сапасын нақты уақыт режимінде бақыла. Ластану деңгейі,
-                болжамдар және қала тұрғындарына арналған аналитика.
+                {t('footer.about.body')}
             </p>
 
             <p className="text-white/50 mt-5 text-xs">
-                © 2025 ICPAIR. Барлық құқықтар қорғалған. 🌍💙
+                {t('footer.about.copy')}
             </p>
         </div>
     );
 }
 
-function social() {
+function social(t) {
     return (
         <div>
-            <h2 className="text-white text-lg font-bold">Біз әлеуметтік желілердеміз:</h2>
+            <h2 className="text-white text-lg font-bold">{t('footer.social.title')}</h2>
 
             <div className="flex items-center gap-3 mt-5 text-white/70">
-                <span>Instagram</span>
+                <span>{t('footer.social.instagram')}</span>
                 <FaInstagram size={18} />
             </div>
 
             <div className="flex items-center gap-3 mt-5 text-white/70">
-                <span>Telegram</span>
+                <span>{t('footer.social.telegram')}</span>
                 <FaTelegram size={18} />
             </div>
         </div>
     );
 }
 
-function contacts() {
+function contacts(t) {
     return (
         <div>
-            <h2 className="text-white text-lg font-bold">Байланыс:</h2>
+            <h2 className="text-white text-lg font-bold">{t('footer.contacts.title')}</h2>
 
             <p className="text-white/70 mt-5">icpair2025@gmail.com</p>
             <p className="text-white/70 mt-2">+7 777 77 77 77</p>

@@ -1,8 +1,11 @@
+import { useLanguage } from '../i18n.js';
+
 const NavBar = ({ activePage, setActivePage }) => {
+    const { locale, setLocale, t } = useLanguage();
     const navItems = [
-        { id: 'home', label: 'Басты бет' },
-        { id: 'about', label: 'Біз туралы' },
-        { id: 'services', label: 'Қызметтер' },
+        { id: 'home', label: t('nav.home') },
+        { id: 'about', label: t('nav.about') },
+        { id: 'services', label: t('nav.services') },
     ];
 
     return (
@@ -16,7 +19,7 @@ const NavBar = ({ activePage, setActivePage }) => {
                     </div>
 
 
-                    <div className="flex space-x-4">
+                    <div className="flex space-x-4 items-center">
                         {navItems.map((item) => (
                             <a
                                 key={item.id}
@@ -30,6 +33,21 @@ const NavBar = ({ activePage, setActivePage }) => {
                                 {item.label}
                             </a>
                         ))}
+                        <div className="ml-2 flex items-center gap-2">
+                            <label className="text-sm text-gray-600" htmlFor="language-select">
+                                {t('nav.language')}
+                            </label>
+                            <select
+                                id="language-select"
+                                value={locale}
+                                onChange={(event) => setLocale(event.target.value)}
+                                className="border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option value="en">{t('nav.languages.en')}</option>
+                                <option value="kk">{t('nav.languages.kk')}</option>
+                                <option value="ru">{t('nav.languages.ru')}</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </nav>

@@ -1,18 +1,20 @@
 import { useState, lazy, Suspense } from 'react';
 import { FiMap, FiBarChart2, FiActivity } from 'react-icons/fi';
+import { useLanguage } from '../i18n.js';
 
 const AirQualityMap = lazy(() => import('./air-quality-map.tsx'));
 const AQIDashboard = lazy(() => import('./AQIDashboard.tsx'));
 const AQIHistoryChart = lazy(() => import('./AQIHistoryChart.tsx'));
 
 const HomePage = () => {
+  const { t } = useLanguage();
   const [activePage, setActivePage] = useState('dashboard');
   const [selectedLocationIds, setSelectedLocationIds] = useState([1, 2]); // Share state
 
   const tabs = [
-    { id: 'dashboard', label: 'Dashboard', icon: FiActivity },
-    { id: 'map', label: 'Map View', icon: FiMap },
-    { id: 'charts', label: 'Historical Charts', icon: FiBarChart2 },
+    { id: 'dashboard', label: t('home.tabs.dashboard'), icon: FiActivity },
+    { id: 'map', label: t('home.tabs.map'), icon: FiMap },
+    { id: 'charts', label: t('home.tabs.charts'), icon: FiBarChart2 },
   ];
 
   return (
@@ -45,7 +47,7 @@ const HomePage = () => {
           <div className="h-96 flex items-center justify-center bg-white">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading...</p>
+              <p className="text-gray-600">{t('home.loading')}</p>
             </div>
           </div>
         }

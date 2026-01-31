@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { FiPlus, FiX, FiMapPin } from 'react-icons/fi';
+import { useLanguage } from '../i18n.js';
 
 interface Location {
   id: number;
@@ -25,6 +26,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
   selectedLocationIds,
   onSelectionChange,
 }) => {
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [groupedByCity, setGroupedByCity] = useState<{ [key: string]: Location[] }>({});
@@ -70,14 +72,14 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
           <FiMapPin className="text-blue-600" size={20} />
-          Monitor Locations
+          {t('locationSelector.title')}
         </h3>
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="flex items-center gap-2 px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors"
         >
           <FiPlus size={16} />
-          Add Location
+          {t('locationSelector.addLocation')}
         </button>
       </div>
 
@@ -93,7 +95,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
               <button
                 onClick={() => handleRemoveLocation(loc.id)}
                 className="hover:text-blue-900 transition-colors"
-                title="Remove"
+                title={t('locationSelector.remove')}
               >
                 <FiX size={14} />
               </button>
@@ -104,8 +106,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
 
       {/* Location Count */}
       <p className="text-xs text-gray-600 mb-4">
-        Monitoring {selectedLocations.length} location{selectedLocations.length !== 1 ? 's' : ''} out of{' '}
-        {availableLocations.length}
+        {t('locationSelector.monitoring')} {selectedLocations.length} {selectedLocations.length !== 1 ? t('locationSelector.locationPlural') : t('locationSelector.locationSingular')} {t('locationSelector.outOf')} {availableLocations.length}
       </p>
 
       {/* Location Picker Modal */}
@@ -114,7 +115,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
           {/* Search Bar */}
           <input
             type="text"
-            placeholder="Search locations or cities..."
+            placeholder={t('locationSelector.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -161,7 +162,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
             onClick={() => setIsOpen(false)}
             className="w-full mt-3 px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-50 transition-colors"
           >
-            Done
+            {t('locationSelector.done')}
           </button>
         </div>
       )}

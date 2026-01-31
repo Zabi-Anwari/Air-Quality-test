@@ -1,22 +1,26 @@
 import React, { useState, lazy, Suspense } from 'react';
 import NavBar from './components/NavBar.jsx';
 import Footer from './components/Footer.jsx';
+import { LanguageProvider, useLanguage } from './i18n.js';
 
 const HomePage = lazy(() => import('./components/HomePage.jsx'));
 const AboutPage = lazy(() => import('./components/AboutPage.jsx'));
 const ServicesPage = lazy(() => import('./components/ServicesPage.jsx'));
 
-const LoadingSpinner = () => (
-  <div style={{
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: '400px',
-    fontFamily: 'Arial, sans-serif'
-  }}>
-    <p>Loading...</p>
-  </div>
-);
+const LoadingSpinner = () => {
+  const { t } = useLanguage();
+  return (
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      minHeight: '400px',
+      fontFamily: 'Arial, sans-serif'
+    }}>
+      <p>{t('app.loading')}</p>
+    </div>
+  );
+};
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -79,23 +83,25 @@ const App = () => {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      fontFamily: 'Arial, sans-serif',
-      backgroundColor: '#f0f0f0'
-    }}>
-      <NavBar activePage={activePage} setActivePage={setActivePage} />
-      <main style={{ flex: 1, padding: '20px' }}>
-        <ErrorBoundary>
-          <Suspense fallback={<LoadingSpinner />}>
-            {renderPage()}
-          </Suspense>
-        </ErrorBoundary>
-      </main>
-      <Footer />
-    </div>
+    <LanguageProvider>
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        fontFamily: 'Arial, sans-serif',
+        backgroundColor: '#f0f0f0'
+      }}>
+        <NavBar activePage={activePage} setActivePage={setActivePage} />
+        <main style={{ flex: 1, padding: '20px' }}>
+          <ErrorBoundary>
+            <Suspense fallback={<LoadingSpinner />}>
+              {renderPage()}
+            </Suspense>
+          </ErrorBoundary>
+        </main>
+        <Footer />
+      </div>
+    </LanguageProvider>
   );
 };
 

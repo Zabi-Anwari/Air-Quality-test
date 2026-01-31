@@ -5,6 +5,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../i18n.js';
 
 interface HistoricalData {
   sensor_id: number;
@@ -29,6 +30,9 @@ interface ChartProps {
 }
 
 const AQIHistoryChart: React.FC<ChartProps> = ({ selectedLocationIds = [1, 2], hoursBack = 24 }) => {
+  const { t, locale } = useLanguage();
+  const localeMap: Record<string, string> = { en: 'en-US', kk: 'kk-KZ', ru: 'ru-RU' };
+  const resolvedLocale = localeMap[locale] || 'en-US';
   const [data, setData] = useState<HistoricalData[]>([]);
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -36,6 +40,18 @@ const AQIHistoryChart: React.FC<ChartProps> = ({ selectedLocationIds = [1, 2], h
   const [selectedSensor, setSelectedSensor] = useState<number | null>(null);
   const [timeRange, setTimeRange] = useState<number>(hoursBack);
   const [availableLocations, setAvailableLocations] = useState<{ id: number; name: string }[]>([]);
+
+  const translateCategory = (category?: string) => {
+    if (!category) return t('aqiCategories.unknown');
+    const normalized = category.toLowerCase();
+    if (normalized.includes('hazardous')) return t('aqiCategories.hazardous');
+    if (normalized.includes('very unhealthy')) return t('aqiCategories.veryUnhealthy');
+    if (normalized.includes('unhealthy for sensitive') || normalized.includes('sensitive')) return t('aqiCategories.sensitive');
+    if (normalized.includes('unhealthy')) return t('aqiCategories.unhealthy');
+    if (normalized.includes('moderate')) return t('aqiCategories.moderate');
+    if (normalized.includes('good')) return t('aqiCategories.good');
+    return category;
+  };
 
   const fetchLocations = async () => {
     try {
@@ -170,7 +186,7 @@ const AQIHistoryChart: React.FC<ChartProps> = ({ selectedLocationIds = [1, 2], h
 
   // Simple ASCII line chart renderer
   const renderChart = () => {
-    if (data.length === 0) return <p className="text-gray-500">No data available</p>;
+    if (data.length === 0) return <p className="text-gray-500">{t('history.noData')}</p>;
 
     const maxAQI = Math.max(...data.map((d) => d.aqi_overall), 200);
     const chartHeight = 12;
@@ -196,7 +212,7 @@ const AQIHistoryChart: React.FC<ChartProps> = ({ selectedLocationIds = [1, 2], h
                       <div
                         key={i}
                         className="w-1 border-l border-gray-300"
-                        title={`${point.timestamp}: AQI ${point.aqi_overall}`}
+                        title={`${point.timestamp}: ${t('common.aqi')} ${point.aqi_overall}`}
                       >
                         {point.aqi_overall >= threshold && (
                           <div
@@ -222,12 +238,23 @@ const AQIHistoryChart: React.FC<ChartProps> = ({ selectedLocationIds = [1, 2], h
     <div className="space-y-6">
       {/* Header with sensor selector */}
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-3xl font-bold text-gray-800 mb-4">Historical Trends & Analysis</h2>
-        <p className="text-gray-600 mb-4">View detailed historical data for selected locations over the past {timeRange === 6 ? '6 hours' : timeRange === 12 ? '12 hours' : timeRange === 24 ? '24 hours' : timeRange === 72 ? '3 days' : '7 days'}</p>
+        <h2 className="text-3xl font-bold text-gray-800 mb-4">{t('history.title')}</h2>
+        <p className="text-gray-600 mb-4">
+          {t('history.subtitlePrefix')}{' '}
+          {timeRange === 6
+            ? t('history.range.h6')
+            : timeRange === 12
+              ? t('history.range.h12')
+              : timeRange === 24
+                ? t('history.range.h24')
+                : timeRange === 72
+                  ? t('history.range.d3')
+                  : t('history.range.d7')}
+        </p>
         
         {/* Time period selector */}
         <div className="mb-4">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">Time Period:</label>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">{t('history.timePeriod')}</label>
           <div className="flex gap-2 flex-wrap">
             {[6, 12, 24, 72, 168].map((hours) => (
               <button
@@ -247,7 +274,7 @@ const AQIHistoryChart: React.FC<ChartProps> = ({ selectedLocationIds = [1, 2], h
 
         {/* Sensor selector */}
         <div className="mb-4">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">Select Location:</label>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">{t('history.selectLocation')}</label>
           <select
             value={selectedSensor || (selectedLocationIds && selectedLocationIds[0]) || 1}
             onChange={(e) => setSelectedSensor(parseInt(e.target.value))}
@@ -259,7 +286,7 @@ const AQIHistoryChart: React.FC<ChartProps> = ({ selectedLocationIds = [1, 2], h
                 const locationName = availableLocations.find((location) => location.id === id)?.name;
                 return (
                   <option key={id} value={id}>
-                    {locationName || `Location ${id}`}
+                    {locationName || `${t('history.locationFallback')} ${id}`}
                   </option>
                 );
               })}
@@ -271,7 +298,7 @@ const AQIHistoryChart: React.FC<ChartProps> = ({ selectedLocationIds = [1, 2], h
       <div className="bg-white rounded-lg shadow-md p-6">
 
       {loading ? (
-        <p className="text-gray-500">Loading chart data...</p>
+        <p className="text-gray-500">{t('history.loadingChart')}</p>
       ) : (
         <>
           {/* Chart */}
@@ -281,19 +308,19 @@ const AQIHistoryChart: React.FC<ChartProps> = ({ selectedLocationIds = [1, 2], h
           {stats && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-gray-50 p-4 rounded-lg mb-6">
               <div>
-                <p className="text-xs text-gray-600">Minimum</p>
+                <p className="text-xs text-gray-600">{t('history.min')}</p>
                 <p className="text-2xl font-bold text-green-600">{stats.min_aqi}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-600">Maximum</p>
+                <p className="text-xs text-gray-600">{t('history.max')}</p>
                 <p className="text-2xl font-bold text-red-600">{stats.max_aqi}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-600">Average</p>
+                <p className="text-xs text-gray-600">{t('history.avg')}</p>
                 <p className="text-2xl font-bold text-blue-600">{stats.avg_aqi}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-600">Std Dev</p>
+                <p className="text-xs text-gray-600">{t('history.stdDev')}</p>
                 <p className="text-2xl font-bold text-purple-600">{stats.stddev}</p>
               </div>
             </div>
@@ -301,7 +328,7 @@ const AQIHistoryChart: React.FC<ChartProps> = ({ selectedLocationIds = [1, 2], h
 
           {/* Pollutant Selection */}
           <div className="mb-6">
-            <p className="font-semibold text-gray-800 mb-3">Display Pollutants:</p>
+            <p className="font-semibold text-gray-800 mb-3">{t('history.displayPollutants')}</p>
             <div className="flex flex-wrap gap-2">
               {['aqi_overall', 'pm25_aqi', 'pm10_aqi', 'no2_aqi', 'co_aqi', 'o3_aqi', 'so2_aqi'].map((pollutant) => (
                 <button
@@ -314,18 +341,18 @@ const AQIHistoryChart: React.FC<ChartProps> = ({ selectedLocationIds = [1, 2], h
                   }`}
                 >
                   {pollutant === 'aqi_overall'
-                    ? 'Overall AQI'
+                    ? t('common.overallAqi')
                     : pollutant === 'pm25_aqi'
-                      ? 'PM2.5'
+                      ? t('pollutants.pm25')
                       : pollutant === 'pm10_aqi'
-                        ? 'PM10'
+                        ? t('pollutants.pm10')
                         : pollutant === 'no2_aqi'
-                          ? 'NO₂'
+                          ? t('pollutants.no2')
                           : pollutant === 'co_aqi'
-                            ? 'CO'
+                            ? t('pollutants.co')
                             : pollutant === 'o3_aqi'
-                              ? 'O₃'
-                              : 'SO₂'}
+                              ? t('pollutants.o3')
+                              : t('pollutants.so2')}
                 </button>
               ))}
             </div>
@@ -336,18 +363,18 @@ const AQIHistoryChart: React.FC<ChartProps> = ({ selectedLocationIds = [1, 2], h
             <table className="min-w-full text-sm">
               <thead className="bg-gray-100 border-b">
                 <tr>
-                  <th className="px-4 py-2 text-left text-gray-700">Time</th>
-                  <th className="px-4 py-2 text-left text-gray-700">Overall AQI</th>
-                  <th className="px-4 py-2 text-left text-gray-700">PM2.5</th>
-                  <th className="px-4 py-2 text-left text-gray-700">PM10</th>
-                  <th className="px-4 py-2 text-left text-gray-700">Category</th>
+                  <th className="px-4 py-2 text-left text-gray-700">{t('common.time')}</th>
+                  <th className="px-4 py-2 text-left text-gray-700">{t('common.overallAqi')}</th>
+                  <th className="px-4 py-2 text-left text-gray-700">{t('pollutants.pm25')}</th>
+                  <th className="px-4 py-2 text-left text-gray-700">{t('pollutants.pm10')}</th>
+                  <th className="px-4 py-2 text-left text-gray-700">{t('common.category')}</th>
                 </tr>
               </thead>
               <tbody>
                 {data.slice(-10).map((item, idx) => (
                   <tr key={idx} className="border-b hover:bg-gray-50">
                     <td className="px-4 py-2 text-gray-700">
-                      {new Date(item.timestamp).toLocaleTimeString([], {
+                      {new Date(item.timestamp).toLocaleTimeString(resolvedLocale, {
                         hour: '2-digit',
                         minute: '2-digit',
                       })}
@@ -355,9 +382,9 @@ const AQIHistoryChart: React.FC<ChartProps> = ({ selectedLocationIds = [1, 2], h
                     <td className="px-4 py-2 font-bold" style={{ color: item.color }}>
                       {item.aqi_overall}
                     </td>
-                    <td className="px-4 py-2 text-gray-700">{item.pollutants.pm25_aqi || '—'}</td>
-                    <td className="px-4 py-2 text-gray-700">{item.pollutants.pm10_aqi || '—'}</td>
-                    <td className="px-4 py-2 text-gray-700">{item.category}</td>
+                    <td className="px-4 py-2 text-gray-700">{item.pollutants.pm25_aqi || t('common.none')}</td>
+                    <td className="px-4 py-2 text-gray-700">{item.pollutants.pm10_aqi || t('common.none')}</td>
+                    <td className="px-4 py-2 text-gray-700">{translateCategory(item.category)}</td>
                   </tr>
                 ))}
               </tbody>

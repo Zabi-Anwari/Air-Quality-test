@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../i18n.js';
 
 interface ForecastData {
   hour: number;
@@ -18,6 +19,9 @@ interface ForecastChartProps {
 }
 
 const ForecastChart: React.FC<ForecastChartProps> = ({ sensorId, sensorName }) => {
+  const { t, locale } = useLanguage();
+  const localeMap: Record<string, string> = { en: 'en-US', kk: 'kk-KZ', ru: 'ru-RU' };
+  const resolvedLocale = localeMap[locale] || 'en-US';
   const [forecastData, setForecastData] = useState<ForecastData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,12 +57,12 @@ const ForecastChart: React.FC<ForecastChartProps> = ({ sensorId, sensorName }) =
   };
 
   const getAQICategory = (aqi: number) => {
-    if (aqi <= 50) return 'Good';
-    if (aqi <= 100) return 'Moderate';
-    if (aqi <= 150) return 'Unhealthy for Sensitive Groups';
-    if (aqi <= 200) return 'Unhealthy';
-    if (aqi <= 300) return 'Very Unhealthy';
-    return 'Hazardous';
+    if (aqi <= 50) return t('aqiCategories.good');
+    if (aqi <= 100) return t('aqiCategories.moderate');
+    if (aqi <= 150) return t('aqiCategories.sensitive');
+    if (aqi <= 200) return t('aqiCategories.unhealthy');
+    if (aqi <= 300) return t('aqiCategories.veryUnhealthy');
+    return t('aqiCategories.hazardous');
   };
 
   // Group forecasts by day
@@ -102,7 +106,7 @@ const ForecastChart: React.FC<ForecastChartProps> = ({ sensorId, sensorName }) =
     return (
       <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
         <div className="text-red-600">
-          <h2 className="text-xl font-bold mb-2">Forecast Unavailable</h2>
+          <h2 className="text-xl font-bold mb-2">{t('forecast.unavailable')}</h2>
           <p>{error}</p>
         </div>
       </div>
@@ -112,8 +116,8 @@ const ForecastChart: React.FC<ForecastChartProps> = ({ sensorId, sensorName }) =
   if (!forecastData.length) {
     return (
       <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">7-Day Air Quality Forecast</h2>
-        <p className="text-gray-600">No forecast data available for this sensor.</p>
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">{t('forecast.noDataTitle')}</h2>
+        <p className="text-gray-600">{t('forecast.noDataBody')}</p>
       </div>
     );
   }
@@ -123,12 +127,12 @@ const ForecastChart: React.FC<ForecastChartProps> = ({ sensorId, sensorName }) =
       {/* Header */}
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-gray-800">
-          3-Day Air Quality Forecast
+          {t('forecast.title')}
           {sensorName && <span className="text-lg font-normal text-gray-600"> - {sensorName}</span>}
         </h2>
         <div className="flex items-center gap-4 mt-2">
           <p className="text-gray-600">
-            Next 3 days • Updated: {new Date().toLocaleDateString()}
+            {t('forecast.nextDays')} • {t('forecast.updatedLabel')}: {new Date().toLocaleDateString(resolvedLocale)}
           </p>
         </div>
       </div>
@@ -137,7 +141,7 @@ const ForecastChart: React.FC<ForecastChartProps> = ({ sensorId, sensorName }) =
       <div className="mb-8">
         <div className="flex items-end justify-between gap-2 mb-4 h-64">
           {dailyAverages.map((item, index) => {
-            const dayName = new Date(item.day).toLocaleDateString('en-US', { weekday: 'short' });
+            const dayName = new Date(item.day).toLocaleDateString(resolvedLocale, { weekday: 'short' });
             const dateNum = new Date(item.day).getDate();
 
             return (
@@ -151,13 +155,13 @@ const ForecastChart: React.FC<ForecastChartProps> = ({ sensorId, sensorName }) =
                       backgroundColor: getAQIColor(item.avgAQI),
                       minHeight: '8px',
                     }}
-                    title={`${dayName} ${dateNum}: ${item.avgAQI} AQI (${getAQICategory(item.avgAQI)}) - Confidence: ${(item.avgConfidence * 100).toFixed(0)}%`}
+                    title={`${dayName} ${dateNum}: ${item.avgAQI} ${t('common.aqi')} (${getAQICategory(item.avgAQI)}) - ${t('common.confidence')}: ${(item.avgConfidence * 100).toFixed(0)}%`}
                   />
                   {/* Confidence indicator */}
                   <div
                     className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 rounded-full border border-white"
                     style={{ backgroundColor: item.avgConfidence > 0.7 ? '#10b981' : item.avgConfidence > 0.5 ? '#fbbf24' : '#ef4444' }}
-                    title={`Confidence: ${(item.avgConfidence * 100).toFixed(0)}%`}
+                    title={`${t('common.confidence')}: ${(item.avgConfidence * 100).toFixed(0)}%`}
                   ></div>
                   {/* Value Label */}
                   <div className="mt-2 text-sm font-bold text-gray-800">{item.avgAQI}</div>
