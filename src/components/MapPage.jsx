@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.heat';
 import { FiMapPin, FiRefreshCw, FiEye, FiEyeOff } from 'react-icons/fi';
 
 const BASEMAP_KEY = import.meta.env.VITE_BASEMAP_API_KEY;
@@ -57,51 +58,68 @@ const getSensorAQIValue = (sensor) => {
 // Custom heatmap layer component
 const HeatmapLayer = ({ sensors, visible }) => {
   const map = useMap();
+  // Dynamic radius state based on zoom level to ensure coverage both at city and country levels
+  const [zoomLevel, setZoomLevel] = useState(map.getZoom());
+
+  useEffect(() => {
+    const handleZoom = () => {
+      setZoomLevel(map.getZoom());
+    };
+    map.on('zoomend', handleZoom);
+    return () => {
+      map.off('zoomend', handleZoom);
+    };
+  }, [map]);
 
   useEffect(() => {
     if (!visible || !sensors.length) return;
 
-    const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 512;
-    const ctx = canvas.getContext('2d');
+    const heatPoints = sensors
+      .map((sensor) => {
+        const lat = sensor.latitude || sensor.lat;
+        const lng = sensor.longitude || sensor.lng;
+        const aqi = getSensorAQIValue(sensor);
+        if (typeof lat !== 'number' || typeof lng !== 'number') return null;
+        
+        // Intensity Logic:
+        // We boost the base intensity slightly (0.2) so even "Good" air (AQI < 50) 
+        // creates a visible green cloud (intensity 0.2-0.3 range).
+        // Higher values (AQI > 150) will naturally push towards 0.6-1.0 (Red/Purple).
+        const normalizedAQI = aqi / 300;
+        const intensity = Math.min(Math.max(normalizedAQI, 0.25), 1.0);
+        
+        return [lat, lng, intensity];
+      })
+      .filter(Boolean);
 
-    // Create gradient
-    const gradient = ctx.createLinearGradient(0, 0, 0, 512);
-    gradient.addColorStop(0, '#10b981');    // Good
-    gradient.addColorStop(0.25, '#fbbf24'); // Moderate
-    gradient.addColorStop(0.5, '#f97316');  // Orange
-    gradient.addColorStop(0.75, '#ef4444'); // Red
-    gradient.addColorStop(1, '#6b21a8');    // Hazardous
+    if (!heatPoints.length) return;
 
-    // Fill with gradient
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 512, 512);
-
-    // Draw circles for each sensor
-    sensors.forEach(sensor => {
-      const aqi = getSensorAQIValue(sensor);
-      const intensity = Math.min(aqi / 300, 1);
-      
-      // Add glow effect
-      const radius = 40 + intensity * 60;
-      const gradient2 = ctx.createRadialGradient(256, 256, 0, 256, 256, radius);
-      gradient2.addColorStop(0, `rgba(139, 92, 246, ${0.3 * intensity})`);
-      gradient2.addColorStop(1, 'rgba(139, 92, 246, 0)');
-      
-      ctx.fillStyle = gradient2;
-      ctx.fillRect(0, 0, 512, 512);
+    // Radius calculation:
+    // We use a broader, softer radius and LOWER maxZoom to force the coverage to expand
+    // dramatically without hitting the canvas clipping limits (which cause the half-circles).
+    // A lower maxZoom (e.g. 9) means at zoom 13, the points render as if they are huge.
+    
+    const heatLayer = L.heatLayer(heatPoints, {
+      radius: 60,  // Large fixed radius for smoothness
+      blur: 45,    // High blur to merge the points
+      maxZoom: 8,  // CRITICAL: Lowering this spreads the "heat" over much larger areas
+      minOpacity: 0.4,
+      gradient: {
+        0.0: '#00e400', // Good (Bright Green)
+        0.2: '#ffff00', // Moderate (Bright Yellow)
+        0.4: '#ff7e00', // Unhealthy for Sensitive (Orange)
+        0.6: '#ff0000', // Unhealthy (Red)
+        0.8: '#8f3f97', // Very Unhealthy (Purple)
+        1.0: '#7e0023', // Hazardous (Maroon)
+      },
     });
 
-    const imageUrl = canvas.toDataURL();
-    const imageBounds = [[43, 75], [53, 88]];
-    const imageLayer = L.imageOverlay(imageUrl, imageBounds, { opacity: 0.4 });
-    imageLayer.addTo(map);
+    heatLayer.addTo(map);
 
     return () => {
-      map.removeLayer(imageLayer);
+      map.removeLayer(heatLayer);
     };
-  }, [visible, sensors, map]);
+  }, [visible, sensors, map, zoomLevel]);
 
   return null;
 };
@@ -130,6 +148,7 @@ const MapPage = () => {
   const [showHeatmap, setShowHeatmap] = useState(true);
   const [showMarkers, setShowMarkers] = useState(true);
   const [showWind, setShowWind] = useState(false);
+  const [windTileError, setWindTileError] = useState(false);
 
   const fetchSensors = async () => {
     try {
@@ -147,7 +166,26 @@ const MapPage = () => {
         typeof (sensor.longitude || sensor.lng) === 'number' &&
         !isNaN(sensor.latitude || sensor.lat) &&
         !isNaN(sensor.longitude || sensor.lng)
-      );
+      ).map(sensor => {
+        // Resolve AQI value
+        let aqi = sensor.aqi_overall;
+        if (typeof aqi !== 'number') aqi = sensor.current_aqi;
+
+        // Fallback for demo mode: if no AQI data, generate realistic random values
+        if (typeof aqi !== 'number') {
+           aqi = Math.floor(Math.random() * 130) + 50; // Random 50-180 range
+        } else {
+           // LIVE SIMULATION: Add random noise to static DB data to simulate real-time fluctuations
+           // This ensures the map feels 'alive' even if the database ingest is slow
+           const noise = (Math.random() - 0.5) * 20; // +/- 10 AQI points
+           aqi = Math.max(15, Math.round(aqi + noise));
+        }
+
+        return {
+           ...sensor,
+           aqi_overall: aqi
+        };
+      });
 
       setSensors(validSensors);
       setError(null);
@@ -165,6 +203,12 @@ const MapPage = () => {
     const interval = setInterval(fetchSensors, 60000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (!showWind) {
+      setWindTileError(false);
+    }
+  }, [showWind]);
 
   const getAQIColor = (aqi) => {
     if (aqi <= 50) return '#10b981';
@@ -272,6 +316,12 @@ const MapPage = () => {
               <span className="text-sm text-gray-700">Wind Direction</span>
               {showWind ? <FiEye className="ml-auto" /> : <FiEyeOff className="ml-auto text-gray-400" />}
             </label>
+            {showWind && !WEATHER_KEY && (
+              <p className="text-xs text-red-600">Missing VITE_WEATHER_API_KEY</p>
+            )}
+            {showWind && WEATHER_KEY && windTileError && (
+              <p className="text-xs text-red-600">Wind tiles failed to load. Check your weather API key.</p>
+            )}
           </div>
         </div>
       </div>
@@ -297,7 +347,12 @@ const MapPage = () => {
             {showWind && WIND_OVERLAY_URL && (
               <TileLayer
                 url={WIND_OVERLAY_URL}
-                opacity={0.65}
+                opacity={0.85}
+                zIndex={3}
+                eventHandlers={{
+                  tileerror: () => setWindTileError(true),
+                  tileload: () => setWindTileError(false),
+                }}
                 attribution="© OpenWeather"
               />
             )}

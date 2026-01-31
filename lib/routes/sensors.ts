@@ -6,9 +6,10 @@
 import express, { Request, Response } from 'express';
 import { getSensors, getLatestReadingsByDeviceIds } from '../data-access';
 import { getSensorHealth, getAllSensorHealth } from '../services/sensor-health';
-import { mockSensors } from '../services/mock-data';
+import { mockSensors, getMockCurrentAQI } from '../services/mock-data';
 
 const router = express.Router();
+
 
 /**
  * GET /api/sensors
@@ -36,7 +37,7 @@ router.get('/latest', async (req: Request, res: Response) => {
     res.json(sensorsWithReadings);
   } catch (error) {
     console.warn('Database error, returning mock sensor data:', (error as Error).message);
-    res.json(mockSensors);
+    res.json(getMockCurrentAQI());
   }
 });
 
