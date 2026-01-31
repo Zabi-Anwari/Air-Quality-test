@@ -2,7 +2,7 @@ import { useState, lazy, Suspense } from 'react';
 import { FiMap, FiBarChart2, FiActivity } from 'react-icons/fi';
 import { useLanguage } from '../i18n.js';
 
-const AirQualityMap = lazy(() => import('./air-quality-map.tsx'));
+const MapPage = lazy(() => import('./MapPage.jsx'));
 const AQIDashboard = lazy(() => import('./AQIDashboard.tsx'));
 const AQIHistoryChart = lazy(() => import('./AQIHistoryChart.tsx'));
 
@@ -59,9 +59,7 @@ const HomePage = () => {
           />
         )}
         {activePage === 'map' && (
-          <div className="h-[70vh] w-full">
-            <AirQualityMap selectedLocationIds={selectedLocationIds} />
-          </div>
+          <MapPage />
         )}
         {activePage === 'charts' && (
           <div className="max-w-7xl mx-auto p-6">
