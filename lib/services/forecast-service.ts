@@ -123,12 +123,22 @@ export async function generateForecast(sensor_id: number): Promise<ForecastData[
       historicalData = await getHistoricalAQIFromReadings(sensor_id);
     }
 
-    if (historicalData.length < 3) {
-      // Not enough data for forecast
+    let aqiValues = historicalData.map((d) => d.aqi_overall);
+
+    // CRITICAL FIX: Handle insufficient data by padding
+    // If we have at least 1 reading, we can generate a flat forecast
+    if (aqiValues.length > 0 && aqiValues.length < 3) {
+       // Pad history with the single value we have to simulate a stable trend
+       while (aqiValues.length < 3) {
+           aqiValues.unshift(aqiValues[0]);
+       }
+    }
+    
+    if (aqiValues.length < 3) {
+      // Still no data (truly empty database)
       return [];
     }
 
-    const aqiValues = historicalData.map((d) => d.aqi_overall);
     const smoothedValues = calculateExponentialSmoothing(aqiValues);
     const trend = calculateTrend(aqiValues);
     const confidence = calculateConfidence(aqiValues);
@@ -181,14 +191,15 @@ export async function generateForecast(sensor_id: number): Promise<ForecastData[
  */
 export async function storeForecast(
   sensor_id: number,
-  forecast: ForecastData
+  forecast: ForecastData,
+  created_at: Date = new Date() // Accept optional common timestamp
 ): Promise<ForecastRow> {
   const result = await query<ForecastRow>(
     `INSERT INTO forecasts 
      (sensor_id, forecast_hour, predicted_aqi, confidence, model_version, created_at, valid_at)
-     VALUES ($1, $2, $3, $4, $5, NOW(), $6)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
      RETURNING *`,
-    [sensor_id, forecast.hour, forecast.predicted_aqi, forecast.confidence, MODEL_VERSION, forecast.valid_at]
+    [sensor_id, forecast.hour, forecast.predicted_aqi, forecast.confidence, MODEL_VERSION, created_at, forecast.valid_at]
   );
   return result.rows[0];
 }
@@ -203,8 +214,10 @@ export async function replaceForecasts(
   await query('DELETE FROM forecasts WHERE sensor_id = $1', [sensor_id]);
 
   const stored: ForecastRow[] = [];
+  const createdAtBucket = new Date(); // Use same timestamp for the whole batch
+
   for (const forecast of forecasts) {
-    const result = await storeForecast(sensor_id, forecast);
+    const result = await storeForecast(sensor_id, forecast, createdAtBucket);
     stored.push(result);
   }
 
@@ -247,8 +260,13 @@ export async function generateAndStoreForecasts(): Promise<void> {
 
     for (const sensor of sensorsResult.rows) {
       const forecasts = await generateForecast(sensor.id);
+      
+      // Use a consistent timestamp for the entire batch for this sensor
+      // avoiding "MAX(created_at)" race conditions in retrieval queries
+      const batchTimestamp = new Date();
+      
       for (const forecast of forecasts) {
-        await storeForecast(sensor.id, forecast);
+        await storeForecast(sensor.id, forecast, batchTimestamp);
       }
     }
 

@@ -37,8 +37,9 @@ router.get('/:sensorId', async (req: Request, res: Response) => {
       }
 
       const stored = [];
+      const batchTimestamp = new Date();
       for (const forecast of generated) {
-        const result = await storeForecast(sensorId, forecast);
+        const result = await storeForecast(sensorId, forecast, batchTimestamp);
         stored.push(result);
       }
       forecasts = stored;
